@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Add Product Form</title>
+</head>
+<body>
+  <h2>Add Product</h2>
+  <form id="addProductForm">
+    <label for="productName">Product Name:</label>
+    <input type="text" id="productName" name="productName" required>
+
+    <label for="sellingPrice">Selling Price:</label>
+    <input type="number" id="sellingPrice" name="sellingPrice" required>
+
+    <label for="category">Category:</label>
+    <select id="category" name="category">
+      <option value="food">Food</option>
+      <option value="electronic">Electronic Item</option>
+      <option value="skincare">Skincare</option>
+    </select><br><br>
+
+    <button type="button" onclick="saveProduct()">Add Product</button>
+  </form>
+
+  <h2>Product List</h2>
+  <ul id="productList"></ul>
+
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script>
+    var products = []; // Array to store the products
+
+    function saveProduct() {
+      // Retrieve form values
+      var productName = document.getElementById("productName").value;
+      var sellingPrice = document.getElementById("sellingPrice").value;
+      var category = document.getElementById("category").value;
+
+      // Create an object to store product data
+      var product = {
+        productName: productName,
+        sellingPrice: sellingPrice,
+        category: category
+      };
+
+      // Send the product data to your backend or API (using 'crudcrud' or any other service)
+      // Example Axios request:
+      axios.post("https://crudcrud.com/api/bd39029112344b108425580808c929d3/products", product)
+        .then(function(response) {
+          if (response.status === 201) {
+            alert("Product added successfully!");
+
+            // Clear the form after successful submission
+            document.getElementById("addProductForm").reset();
+
+            // Add the product to the products array
+            products.push(product);
+
+            // Display the added product on the screen
+            displayProduct(product);
+          }
+        })
+        .catch(function(error) {
+          console.error("Error adding product:", error);
+        });
+    }
+
+    function displayProduct(product) {
+      var productList = document.getElementById("productList");
+
+      // Create a new list item to display the product
+      var listItem = document.createElement("li");
+      listItem.innerHTML =
+        "<strong>Name:</strong> " +
+        product.productName +
+        ", <strong>Price:</strong> " +
+        product.sellingPrice +
+        ", <strong>Category:</strong> " +
+        product.category;
+
+      // Create a "Delete" button for the product
+      var deleteButton = document.createElement("button");
+      deleteButton.innerText = "Delete";
+      deleteButton.addEventListener("click", function() {
+        deleteProduct(product);
+      });
+
+      // Append the delete button to the list item
+      listItem.appendChild(deleteButton);
+
+      // Append the list item to the product list
+      productList.appendChild(listItem);
+    }
+
+    function deleteProduct(product) {
+  // Remove the product from the backend API
+  axios.delete(`https://crudcrud.com/api/bd39029112344b108425580808c929d3/${product._id}`)
+    .then(function(response) {
+      if (response.status === 200) {
+        // Remove the product from the products array
+        var index = products.indexOf(product);
+        if (index > -1) {
+          products.splice(index, 1);
+        }
+
+        // Remove the product from the displayed list
+        var productList = document.getElementById("productList");
+        var listItem = productList.querySelector(`li[data-product-id="${product._id}"]`);
+        if (listItem) {
+          productList.removeChild(listItem);
+        }
+      }
+    })
+    .catch(function(error) {
+      console.error("Error deleting product:", error);
+    });
+}
+</script>
+</body>
+</html>
