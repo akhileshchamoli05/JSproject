@@ -22,98 +22,130 @@
     <button type="button" onclick="saveProduct()">Add Product</button>
   </form>
 
-  <h2>Product List</h2>
-  <ul id="productList"></ul>
+  <h2>Skincare</h2>
+  <ul id="Skincare"></ul>
+  <h2>Food</h2>
+  <ul id="Food"></ul>
+  <h2>Electronic items</h2>
+  <ul id="Electronicitem"></ul>
 
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script>
     var products = []; // Array to store the products
 
-    function saveProduct() {
-      // Retrieve form values
-      var productName = document.getElementById("productName").value;
-      var sellingPrice = document.getElementById("sellingPrice").value;
-      var category = document.getElementById("category").value;
+    async function saveProduct() {
+  // Retrieve form values
+  var productName = document.getElementById("productName").value;
+  var sellingPrice = document.getElementById("sellingPrice").value;
+  var category = document.getElementById("category").value;
 
-      // Create an object to store product data
-      var product = {
-        productName: productName,
-        sellingPrice: sellingPrice,
-        category: category
-      };
+  // Create an object to store product data
+  var product = {
+    productName: productName,
+    sellingPrice: sellingPrice,
+    category: category
+  };
 
-      // Send the product data to your backend or API (using 'crudcrud' or any other service)
-      // Example Axios request:
-      axios.post("https://crudcrud.com/api/bd39029112344b108425580808c929d3/products", product)
-        .then(function(response) {
-          if (response.status === 201) {
-            alert("Product added successfully!");
+  try {
+    // Send the product data to your backend or API (using 'crudcrud' or any other service)
+    // Example Axios request:
+    const response = await axios.post("https://crudcrud.com/api/f94f296877d443cfb77baf45c8d0c41d/products", product);
+    
+    if (response.status === 201) {
+      product._id = response.data._id; // Assign the generated _id from the API response
 
-            // Clear the form after successful submission
-            document.getElementById("addProductForm").reset();
+      alert("Product added successfully!");
 
-            // Add the product to the products array
-            products.push(product);
+      // Clear the form after successful submission
+      document.getElementById("addProductForm").reset();
 
-            // Display the added product on the screen
-            displayProduct(product);
-          }
-        })
-        .catch(function(error) {
-          console.error("Error adding product:", error);
-        });
+      // Add the product to the products array
+      products.push(product);
+
+      // Display the added product on the screen
+      displayProduct(product);
     }
+  } catch (error) {
+    console.error("Error adding product:", error);
+  }
+}
 
-    function displayProduct(product) {
-      var productList = document.getElementById("productList");
 
-      // Create a new list item to display the product
-      var listItem = document.createElement("li");
-      listItem.innerHTML =
-        "<strong>Name:</strong> " +
-        product.productName +
-        ", <strong>Price:</strong> " +
-        product.sellingPrice +
-        ", <strong>Category:</strong> " +
-        product.category;
+function displayProduct(product) {
+  var productList;
 
-      // Create a "Delete" button for the product
-      var deleteButton = document.createElement("button");
-      deleteButton.innerText = "Delete";
-      deleteButton.addEventListener("click", function() {
-        deleteProduct(product);
-      });
+  if (product.category === "food") {
+    productList = document.getElementById("Food");
+  } else if (product.category === "skincare") {
+    productList = document.getElementById("Skincare");
+  } else if (product.category === "electronic") {
+    productList = document.getElementById("Electronicitem");
+  } else {
+    console.error("Invalid category:", product.category);
+    return;
+  }
 
-      // Append the delete button to the list item
-      listItem.appendChild(deleteButton);
+  // Create a new list item to display the product
+  var listItem = document.createElement("li");
+  listItem.innerHTML =
+    "<strong>Name:</strong> " +
+    product.productName +
+    ", <strong>Price:</strong> " +
+    product.sellingPrice +
+    ", <strong>Category:</strong> " +
+    product.category;
 
-      // Append the list item to the product list
-      productList.appendChild(listItem);
-    }
+  // Create a "Delete" button for the product
+  var deleteButton = document.createElement("button");
+  deleteButton.innerText = "Delete";
+  deleteButton.addEventListener("click", function() {
+    deleteProduct(product);
+  });
 
-    function deleteProduct(product) {
-  // Remove the product from the backend API
-  axios.delete(`https://crudcrud.com/api/bd39029112344b108425580808c929d3/${product._id}`)
-    .then(function(response) {
-      if (response.status === 200) {
-        // Remove the product from the products array
-        var index = products.indexOf(product);
-        if (index > -1) {
-          products.splice(index, 1);
-        }
+  // Append the delete button to the list item
+  listItem.appendChild(deleteButton);
 
-        // Remove the product from the displayed list
-        var productList = document.getElementById("productList");
+  // Set a data attribute on the list item to store the product ID
+  listItem.setAttribute("data-product-id", product._id);
+
+  // Append the list item to the product list
+  productList.appendChild(listItem);
+}
+
+async function deleteProduct(product) {
+  try {
+    // Remove the product from the backend API
+    const response = await axios.delete(`https://crudcrud.com/api/f94f296877d443cfb77baf45c8d0c41d/products/${product._id}`);
+
+    if (response.status === 200) {
+      // Remove the product from the products array
+      var index = products.indexOf(product);
+      if (index > -1) {
+        products.splice(index, 1);
+      }
+
+      // Remove the product from the displayed list
+      var productList;
+      if (product.category === "food") {
+        productList = document.getElementById("Food");
+      } else if (product.category === "skincare") {
+        productList = document.getElementById("Skincare");
+      } else if (product.category === "electronic") {
+        productList = document.getElementById("Electronicitem");
+      }
+
+      if (productList) {
         var listItem = productList.querySelector(`li[data-product-id="${product._id}"]`);
         if (listItem) {
           productList.removeChild(listItem);
         }
       }
-    })
-    .catch(function(error) {
-      console.error("Error deleting product:", error);
-    });
+    }
+  } catch (error) {
+    console.error("Error deleting product:", error);
+  }
 }
+
 </script>
 </body>
 </html>
