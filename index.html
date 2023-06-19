@@ -33,58 +33,74 @@
   <script>
     var products = []; // Array to store the products
 
+    // Retrieve stored products from local storage on page load
+    window.addEventListener('load', function() {
+      var storedProducts = localStorage.getItem('products');
+      if (storedProducts) {
+        products = JSON.parse(storedProducts);
+        displayStoredProducts();
+      }
+    });
+
     async function saveProduct() {
-  // Retrieve form values
-  var productName = document.getElementById("productName").value;
-  var sellingPrice = document.getElementById("sellingPrice").value;
-  var category = document.getElementById("category").value;
+      // Retrieve form values
+      var productName = document.getElementById("productName").value;
+      var sellingPrice = document.getElementById("sellingPrice").value;
+      var category = document.getElementById("category").value;
 
-  // Create an object to store product data
-  var product = {
-    productName: productName,
-    sellingPrice: sellingPrice,
-    category: category
-  };
+      // Create an object to store product data
+      var product = {
+        productName: productName,
+        sellingPrice: sellingPrice,
+        category: category
+      };
 
-  try {
-    // Send the product data to your backend or API (using 'crudcrud' or any other service)
-    // Example Axios request:
-    const response = await axios.post("https://crudcrud.com/api/f94f296877d443cfb77baf45c8d0c41d/products", product);
-    
-    if (response.status === 201) {
-      product._id = response.data._id; // Assign the generated _id from the API response
+      try {
+        // Send the product data to your backend or API (using 'crudcrud' or any other service)
+        // Example Axios request:
+        const response = await axios.post("https://crudcrud.com/api/5c461fbb3fad4a71b417fe80d28c3ceb/products", product);
 
-      alert("Product added successfully!");
+        if (response.status === 201) {
+          product._id = response.data._id; // Assign the generated _id from the API response
 
-      // Clear the form after successful submission
-      document.getElementById("addProductForm").reset();
+          alert("Product added successfully!");
 
-      // Add the product to the products array
-      products.push(product);
+          // Clear the form after successful submission
+          document.getElementById("addProductForm").reset();
 
-      // Display the added product on the screen
-      displayProduct(product);
+          // Add the product to the products array
+          products.push(product);
+
+          // Display the added product on the screen
+          displayProduct(product);
+
+          // Update stored products in local storage
+          updateLocalStorage();
+        }
+      } catch (error) {
+        console.error("Error adding product:", error);
+      }
     }
-  } catch (error) {
-    console.error("Error adding product:", error);
-  }
+
+    function displayStoredProducts() {
+      for (var i = 0; i < products.length; i++) {
+        displayProduct(products[i]);
+      }
+    }
+
+    function displayProduct(product) {
+      var productList;
+
+      if (product.category === "food") {
+        productList = document.getElementById("Food");
+      } else if (product.category === "skincare") {
+        productList = document.getElementById("Skincare");
+      } else if (product.category === "electronic") {
+        productList = document.getElementById("Electronicitem");
+} else {
+console.error("Invalid category:", product.category);
+return;
 }
-
-
-function displayProduct(product) {
-  var productList;
-
-  if (product.category === "food") {
-    productList = document.getElementById("Food");
-  } else if (product.category === "skincare") {
-    productList = document.getElementById("Skincare");
-  } else if (product.category === "electronic") {
-    productList = document.getElementById("Electronicitem");
-  } else {
-    console.error("Invalid category:", product.category);
-    return;
-  }
-
   // Create a new list item to display the product
   var listItem = document.createElement("li");
   listItem.innerHTML =
@@ -115,7 +131,7 @@ function displayProduct(product) {
 async function deleteProduct(product) {
   try {
     // Remove the product from the backend API
-    const response = await axios.delete(`https://crudcrud.com/api/f94f296877d443cfb77baf45c8d0c41d/products/${product._id}`);
+    const response = await axios.delete(`https://crudcrud.com/api/5c461fbb3fad4a71b417fe80d28c3ceb/products/${product._id}`);
 
     if (response.status === 200) {
       // Remove the product from the products array
@@ -140,12 +156,18 @@ async function deleteProduct(product) {
           productList.removeChild(listItem);
         }
       }
+
+      // Update stored products in local storage
+      updateLocalStorage();
     }
   } catch (error) {
     console.error("Error deleting product:", error);
   }
 }
 
+function updateLocalStorage() {
+  localStorage.setItem('products', JSON.stringify(products));
+}
 </script>
 </body>
 </html>
